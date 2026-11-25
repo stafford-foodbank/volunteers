@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Foodbank Volunteers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: friendly, quick, made for a volunteer's thumb at the door.
+   IDEA: the paper rota pinned on the foodbank wall – each day a row filling up with names.
+   PICTURE: the week's days as capacity bars with a minimum marker; a big door-code pad for check-in.
+   COLOUR and TYPE: leaf green + apple red like the sign-up form; Barlow Condensed numbers, Figtree text.
+   LAYOUT: one 640px column; header, tabs, list; stacks naturally on phones. */
+:root{color-scheme:light dark;
+  --bg:light-dark(#f4f6f2,#0f1712);--card:light-dark(#fff,#17221b);--ink:light-dark(#16241b,#e8efe9);
+  --muted:light-dark(#5b6b60,#9fb0a4);--line:light-dark(#d6ddd5,#2c3b31);--green:light-dark(#1d5a3a,#7fd1a2);
+  --greenbg:light-dark(#e6f1ea,#1c3326);--red:light-dark(#d8452a,#ff8a6e);--redbg:light-dark(#fdece7,#3a1d16);
+  --blue:light-dark(#1a4fa0,#8fb6ff);--bluebg:light-dark(#e3ecff,#18243d);--field:light-dark(#fff,#101a14)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,sans-serif;overflow-x:clip}
+header{background:var(--green);color:light-dark(#fff,#0f1712);padding:22px max(5vw,16px) 54px}
+.brand{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.brand svg{flex:none;width:48px;height:48px}
+.word{font:800 30px/0.95 "Barlow Condensed",sans-serif;flex:1}
+.word small{display:block;font:600 14px/1.4 Figtree,sans-serif;opacity:.85;margin-top:5px}
+.out{background:none;border:1.5px solid currentColor;color:inherit;border-radius:10px;font:600 14px Figtree,sans-serif;padding:0 12px;min-height:40px;cursor:pointer;display:none}
+main{max-width:640px;margin:-34px auto 0;padding:0 12px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px clamp(16px,4vw,26px);margin-bottom:12px}
+h1{font:800 30px/1.05 "Barlow Condensed",sans-serif;margin:0 0 6px;text-wrap:balance}
+h2{font-size:18px;margin:0 0 10px}
+.muted{color:var(--muted)}
+label{display:block;font-weight:600;margin:12px 0 6px}
+input{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--field);border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;min-height:46px}
+input:focus,button:focus-visible{outline:3px solid light-dark(#9ccfb0,#2f6b49);outline-offset:1px}
+.btn{width:100%;min-height:52px;border:0;border-radius:12px;background:var(--red);color:#fff;font:700 17px Figtree,sans-serif;cursor:pointer;margin-top:16px}
+.btn.green{background:var(--green);color:light-dark(#fff,#0f1712)}
+.btn:disabled{opacity:.55;cursor:wait}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;margin-bottom:12px;gap:4px}
+.seg button{min-height:46px;border:0;border-radius:10px;background:none;color:var(--muted);font:700 16px Figtree,sans-serif;cursor:pointer}
+.seg button[aria-selected=true]{background:var(--green);color:light-dark(#fff,#0f1712)}
+.msg{display:none;padding:12px 14px;border-radius:10px;font-weight:600;margin-bottom:12px}
+.msg.err{display:block;background:var(--redbg);color:var(--red)}
+.msg.ok{display:block;background:var(--greenbg);color:var(--green)}
+.demo{background:light-dark(#fff6d9,#33290c);color:light-dark(#6b5300,#f3d27a);font-size:14px;padding:8px 12px;border-radius:10px;margin-bottom:12px;display:none}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);margin:2px 0 12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.day{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.day:first-of-type{border-top:0}
+.date{text-align:center;border-radius:12px;background:var(--bg);padding:6px 0}
+.date b{display:block;font:800 26px/1 "Barlow Condensed",sans-serif}
+.date span{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.bar{position:relative;height:10px;border-radius:6px;background:var(--bg);margin:6px 0 5px;overflow:visible}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:6px}
+.bar u{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);opacity:.45}
+.st{font-weight:700;font-size:15px}
+.names{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.need .st{color:var(--red)}.need .bar i{background:var(--red)}
+.okd .st{color:var(--green)}.okd .bar i{background:var(--green)}
+.full .st{color:var(--blue)}.full .bar i{background:var(--blue)}
+.closed{opacity:.6}
+.pill{min-height:44px;min-width:92px;padding:0 14px;border-radius:10px;font:700 15px Figtree,sans-serif;cursor:pointer;border:1.5px solid var(--green);background:var(--green);color:light-dark(#fff,#0f1712)}
+.pill.cancel{background:none;color:var(--red);border-color:var(--red)}
+.pill:disabled{background:none;border-color:var(--line);color:var(--muted);cursor:default}
+.mine{display:inline-block;font-size:12px;font-weight:700;background:var(--greenbg);color:var(--green);border-radius:6px;padding:1px 7px;margin-left:6px}
+.big{font:800 52px/1 "Barlow Condensed",sans-serif;color:var(--green)}
+.code{font:800 34px "Barlow Condensed",sans-serif;letter-spacing:12px;text-align:center;padding:8px}
+.stat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.stat div{background:var(--bg);border-radius:12px;padding:12px}
+.stat b{display:block;font:800 30px/1.05 "Barlow Condensed",sans-serif}
+.stat span{font-size:13px;color:var(--muted)}
+.steps{margin:10px 0 0;padding-left:20px;color:var(--muted);font-size:15px}
+.link{background:none;border:0;color:var(--green);font:600 15px Figtree,sans-serif;cursor:pointer;min-height:44px;padding:0}
+.foot{text-align:center;color:var(--muted);font-size:13px;margin-top:16px}
+[hidden]{display:none!important}
+@media(max-width:420px){.day{grid-template-columns:50px minmax(0,1fr)}.day .act{grid-column:2}.pill{width:100%}}
+@media(prefers-reduced-motion:no-preference){.bar i{transition:width .5s ease}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="38" cy="38" r="20" fill="#e2522b"/><path d="M38 18c0-6 4-10 9-11-1 6-4 9-9 11z" fill="#9ee0b6"/><ellipse cx="18" cy="40" rx="11" ry="15" fill="#f4c542" transform="rotate(-20 18 40)"/><circle cx="31" cy="32" r="5" fill="#fff" opacity=".35"/></svg>
+    <div class="word">Stafford foodBANK<small id="hello">Volunteers</small></div>
+    <button class="out" id="logout" type="button">Log out</button>
+  </div>
+</header>
+
+<main>
+  <div class="demo" id="demo">Preview mode with sample data – nothing is saved. Once connected to Google Apps Script, bookings and check-ins go to the Google Sheet.</div>
+  <div class="msg" id="msg" role="alert"></div>
+
+  <!-- Log in / join -->
+  <section id="auth">
+    <div class="seg" role="tablist">
+      <button type="button" role="tab" aria-selected="true" data-auth="login">Log in</button>
+      <button type="button" role="tab" aria-selected="false" data-auth="join">Join</button>
+    </div>
+    <form class="card" id="authForm" novalidate>
+      <h1 id="authTitle">Welcome back</h1>
+      <p class="muted" id="authLead">Log in with your phone number and 4-digit PIN.</p>
+      <div id="joinOnly" hidden>
+        <label for="name">Full name</label><input id="name" autocomplete="name" maxlength="80">
+        <label for="email">Email <span class="muted">(optional)</span></label><input id="email" type="email" autocomplete="email" maxlength="120">
+      </div>
+      <label for="phone">Mobile number</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20">
+      <label for="pin" id="pinLabel">PIN</label><input id="pin" type="password" inputmode="numeric" pattern="\d{4}" maxlength="4" autocomplete="current-password">
+      <button class="btn green" id="authBtn" type="submit">Log in</button>
+      <p class="muted" style="font-size:14px;margin:12px 0 0">Forgot your PIN? Ask the manager to reset it, then tap <b>Join</b> with the same phone number.</p>
+    </form>
+  </section>
+
+  <!-- Logged in -->
+  <section id="app" hidden>
+    <div class="seg" role="tablist">
+      <button type="button" role="tab" aria-selected="true" data-tab="shifts">Book shifts</button>
+      <button type="button" role="tab" aria-selected="false" data-tab="today">Check in</button>
+    </div>
+
+    <div class="card" id="shifts">
+      <h2>Choose the days you can help</h2>
+      <div class="legend"><span><i style="background:var(--red)"></i>Needs volunteers</span><span><i style="background:var(--green)"></i>Enough</span><span><i style="background:var(--blue)"></i>Full</span><span><i style="background:var(--ink);opacity:.45;width:2px"></i>Minimum</span></div>
+      <div id="days"></div>
+    </div>
+
+    <div class="card" id="today" hidden></div>
+  </section>
+
+  <p class="foot">Stafford Foodbank volunteers</p>
+</main>
+
+<script>
+{
+/* ===== PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BETWEEN THE QUOTES (it ends with /exec) ===== */
+const SCRIPT_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';
+/* ============================================================================================ */
+
+const $ = s => document.querySelector(s);
+const DEMO = !/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(SCRIPT_URL.trim());
+if (DEMO) $('#demo').style.display = 'block';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let session = null, state = null, mode = 'login', tab = 'shifts';
+try { session = JSON.parse(localStorage.getItem('sfbVolunteer') || 'null'); } catch (e) {}
+const save = s => { session = s; try { s ? localStorage.setItem('sfbVolunteer', JSON.stringify(s)) : localStorage.removeItem('sfbVolunteer'); } catch (e) {} };
+
+function say(text, ok){ const m = $('#msg'); m.className = 'msg ' + (text ? (ok ? 'ok' : 'err') : ''); m.textContent = text || ''; if (text) m.scrollIntoView({behavior:'smooth', block:'nearest'}); }
+
+async function api(action, data){
+  if (DEMO) return demoApi(action, data || {});
+  const body = Object.assign({action}, data || {}, session ? {id: session.id, token: session.token} : {});
+  let res;
+  try {
+    const r = await fetch(SCRIPT_URL.trim(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(body), redirect:'follow'});
+    res = await r.json();
+  } catch (e) { throw new Error('Connection problem – please check your internet and try again.'); }
+  if (!res.ok){
+    if (/^SESSION:/.test(res.error)){ save(null); showAuth(); throw new Error(res.error.replace(/^SESSION:\s*/, '')); }
+    throw new Error(res.error || 'Something went wrong.');
+  }
+  return res;
+}
+
+/* ---------------- Log in / join ---------------- */
+function setMode(m){
+  mode = m;
+  document.querySelectorAll('[data-auth]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.auth === m)));
+  $('#joinOnly').hidden = m !== 'join';
+  $('#authTitle').textContent = m === 'join' ? 'Become a volunteer' : 'Welcome back';
+  $('#authLead').textContent = m === 'join' ? 'Register once. You will stay logged in on this phone.' : 'Log in with your phone number and 4-digit PIN.';
+  $('#pinLabel').textContent = m === 'join' ? 'Choose a 4-digit PIN' : 'PIN';
+  $('#pin').autocomplete = m === 'join' ? 'new-password' : 'current-password';
+  $('#authBtn').textContent = m === 'join' ? 'Join' : 'Log in';
+  say('');
+}
+document.querySelectorAll('[data-auth]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.auth)));
+
+$('#authForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const phone = $('#phone').value.trim(), pin = $('#pin').value.trim();
+  if (mode === 'join' && $('#name').value.trim().length < 2) return say('Please enter your full name.');
+  if (phone.replace(/\D/g,'').length < 10) return say('Please enter your mobile number.');
+  if (!/^\d{4}$/.test(pin)) return say('Your PIN must be 4 digits.');
+  const btn = $('#authBtn'); btn.disabled = true;
+  try {
+    const r = await api(mode === 'join' ? 'register' : 'login', {name: $('#name').value.trim(), email: $('#email').value.trim(), phone, pin});
+    save(r.session); $('#pin').value = '';
+    await load(); showApp();
+  } catch (err) { say(err.message); }
+  btn.disabled = false;
+});
+
+function showAuth(){ $('#auth').hidden = false; $('#app').hidden = true; $('#logout').style.display = 'none'; $('#hello').textContent = 'Volunteers'; }
+function showApp(){ $('#auth').hidden = true; $('#app').hidden = false; $('#logout').style.display = 'block'; say(''); }
+$('#logout').addEventListener('click', () => { save(null); state = null; showAuth(); setMode('login'); });
+
+/* ---------------- Tabs ---------------- */
+function setTab(t){
+  tab = t;
+  document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  $('#shifts').hidden = t !== 'shifts'; $('#today').hidden = t !== 'today';
+}
+document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => { say(''); setTab(b.dataset.tab); }));
+
+async function load(){ const r = await api('state'); state = r.state; render(); }
+
+/* ---------------- Render ---------------- */
+function render(){
+  $('#hello').textContent = 'Hi ' + state.name.split(' ')[0];
+  const max = state.max, min = state.min;
+  $('#days').innerHTML = state.days.length ? state.days.map(d => {
+    const [dow, dnum, mon] = d.label.split(' ');
+    const cls = d.closed ? 'closed' : d.count >= max ? 'full' : d.count < min ? 'need' : 'okd';
+    const status = d.closed ? 'Closed' : d.count >= max ? 'Full' : d.count < min ? 'Needs ' + (min - d.count) + ' more' : (max - d.count) + ' place' + (max - d.count === 1 ? '' : 's') + ' left';
+    const btn = d.closed ? '<button class="pill" disabled>Closed</button>'
+      : d.mine ? '<button class="pill cancel" data-cancel="' + esc(d.date) + '">Cancel</button>'
+      : d.count >= max ? '<button class="pill" disabled>Full</button>'
+      : '<button class="pill" data-book="' + esc(d.date) + '">Book</button>';
+    return '<div class="day ' + cls + '"><div class="date"><span>' + esc(dow) + '</span><b>' + esc(dnum) + '</b><span>' + esc(mon) + '</span></div>'
+      + '<div><div class="st">' + esc(d.count) + ' / ' + esc(max) + ' · ' + esc(status) + (d.mine ? '<span class="mine">You</span>' : '') + '</div>'
+      + '<div class="bar"><i style="width:' + Math.min(100, d.count / max * 100) + '%"></i><u style="left:' + (min / max * 100) + '%"></u></div>'
+      + '<div class="names">' + (d.names.length ? esc(d.names.join(', ')) : 'Nobody booked yet') + '</div></div>'
+      + '<div class="act">' + btn + '</div></div>';
+  }).join('') : '<p class="muted">No open days in the coming weeks.</p>';
+
+  const t = state.today;
+  let html = '<h2>' + esc(t.label) + '</h2>';
+  if (!t.open){
+    html += '<p class="muted">The foodbank is not open today. Check-in works on open days from your phone at the foodbank.</p>';
+  } else if (!t.checkedIn){
+    html += '<p class="muted">Opening hours ' + esc(state.open) + '–' + esc(state.close) + (t.booked ? ' · you are booked today ✓' : ' · you are not booked today, but you can still check in') + '</p>'
+      + '<label for="code">Today\'s door code</label><input id="code" class="code" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="····">'
+      + '<button class="btn green" id="checkin" type="button">Check in</button>'
+      + '<ol class="steps"><li>Find today\'s code on the board by the door.</li><li>Type it above and tap Check in.</li><li>Allow location when your phone asks – you must be at the foodbank.</li></ol>';
+  } else if (!t.checkedOut){
+    html += '<p class="muted">You checked in at</p><div class="big">' + esc(t.checkedIn) + '</div>'
+      + '<button class="btn" id="checkout" type="button">Check out</button><p class="muted" style="font-size:14px">Tap this before you leave the building.</p>';
+  } else {
+    html += '<p class="muted">Thank you for helping today!</p><div class="big">' + esc(t.checkedIn) + ' – ' + esc(t.checkedOut) + '</div>';
+  }
+  html += '<div class="stat"><div><b>' + esc(t.checkedOut ? t.hours : '–') + '</b><span>Hours today</span></div><div><b>' + esc(state.monthHours) + '</b><span>Hours this month</span></div></div>';
+  $('#today').innerHTML = html;
+}
+
+/* ---------------- Actions ---------------- */
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-book],[data-cancel],#checkin,#checkout');
+  if (!b || b.disabled) return;
+  say(''); b.disabled = true; const label = b.textContent; b.textContent = '…';
+  try {
+    let r;
+    if (b.dataset.book){ r = await api('book', {date: b.dataset.book}); say('Booked – thank you!', true); }
+    else if (b.dataset.cancel){ r = await api('cancel', {date: b.dataset.cancel}); say('Your booking was cancelled.', true); }
+    else {
+      const out = b.id === 'checkout';
+      const code = out ? '' : ($('#code').value || '').trim();
+      if (!out && !code) throw new Error("Please type today's door code first.");
+      b.textContent = 'Finding your location…';
+      const pos = await locate();
+      r = await api(out ? 'checkout' : 'checkin', {code, lat: pos.lat, lng: pos.lng, acc: pos.acc});
+      say(out ? 'Checked out – thank you for your time today!' : 'You are checked in. Have a good shift!', true);
+    }
+    state = r.state; render();
+  } catch (err) { say(err.message); if (document.body.contains(b)){ b.disabled = false; b.textContent = label; } }
+});
+
+function locate(){
+  if (DEMO) return Promise.resolve({lat:0, lng:0, acc:10});
+  return new Promise((ok, no) => {
+    if (!navigator.geolocation) return no(new Error('This phone or browser cannot share its location. Please try another browser.'));
+    navigator.geolocation.getCurrentPosition(
+      p => ok({lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy}),
+      err => no(new Error(err.code === 1
+        ? 'Location is blocked. Please allow location for this website in your phone/browser settings, then try again.'
+        : 'We could not find your location. Please make sure location (GPS) is turned on and try again.')),
+      {enableHighAccuracy: true, timeout: 20000, maximumAge: 0});
+  });
+}
+
+/* ---------------- Preview mode (sample data, nothing saved) ---------------- */
+let demo = null;
+function demoApi(action, d){
+  return new Promise((ok, no) => setTimeout(() => {
+    try {
+      if (!demo){
+        const names = ['Amira','Tom','Priya','John','Fatima','Grace','Ali','Sam','Lucy','Omar'];
+        const days = []; const now = new Date();
+        for (let i = 0; days.length < 12 && i < 40; i++){
+          const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, 12);
+          if ([2,3,4,5].includes(dt.getDay())){
+            const c = [6,3,7,5,2,4,1,6,3,0,5,2][days.length];
+            days.push({date: dt.toISOString().slice(0,10), label: dt.toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'short'}).replace(',', ''), closed: false, count: c, mine: false, names: names.slice(0, c)});
+          }
+        }
+        const td = [2,3,4,5].includes(now.getDay());
+        demo = {name:'', min:5, max:7, open:'10:00', close:'16:00', days, today:{label: now.toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'}), open:true, booked:td, checkedIn:'', checkedOut:'', hours:0}, monthHours:11.5};
+      }
+      const time = () => new Date().toTimeString().slice(0,5);
+      if (action === 'register' || action === 'login'){ demo.name = d.name || 'Hassan Mohammed'; return ok({session:{id:'V001', name:demo.name, token:'demo'}}); }
+      if (!demo.name) demo.name = (session && session.name) || 'Hassan Mohammed';
+      const day = demo.days.find(x => x.date === d.date);
+      if (action === 'book'){ if (day.count >= demo.max) throw new Error('Sorry, this day is now full.'); day.count++; day.mine = true; day.names.push(demo.name.split(' ')[0]); }
+      if (action === 'cancel'){ day.count--; day.mine = false; day.names.pop(); }
+      if (action === 'checkin'){ if (d.code !== '1234') throw new Error("That door code is not right. (In preview, the code is 1234.)"); demo.today.checkedIn = time(); }
+      if (action === 'checkout'){ demo.today.checkedOut = time(); demo.today.hours = 0.25; demo.monthHours += 0.25; }
+      ok({state: JSON.parse(JSON.stringify(demo))});
+    } catch (e) { no(e); }
+  }, 350));
+}
+
+/* ---------------- Start ---------------- */
+setMode('login');
+if (session){ showApp(); $('#days').innerHTML = '<p class="muted">Loading…</p>'; load().catch(err => say(err.message)); }
+else showAuth();
+}
+</script>
+</body>
+</html>
